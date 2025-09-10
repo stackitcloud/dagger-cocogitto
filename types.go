@@ -3,18 +3,18 @@ package main
 import "dagger/dag-coco/internal/dagger"
 
 type ChangelogOptions struct {
-	At         *string // changelog at point
-	Template   *string // template
-	Remote     *string // remote domain
-	Owner      *string // repository owner
-	Repository *string // repository
+	At         *string // changelog until At
+	Template   *string // template (default,full_hash,remote)
+	Remote     *string // remote domain (e.g. github.com)
+	Owner      *string // repository owner account
+	Repository *string // repository name
 }
 
 type CommitOptions struct {
 	CogToml        *dagger.File // optional cog toml to overwrite file
 	CommitType     string       // commit type: must be conv commit commit type
 	CommitMessage  string       // commit message
-	BreakingChange bool         // is a breaking change ?
+	BreakingChange bool         // is commit a breaking change ?
 }
 
 type GetVersionOptions struct {
