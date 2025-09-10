@@ -1,101 +1,14 @@
-// A generated module for DagCoco functions
-//
-// This module has been generated via dagger init and serves as a reference to
-// basic module structure as you get started with Dagger.
-//
-// Two functions have been pre-created. You can modify, delete, or add to them,
-// as needed. They demonstrate usage of arguments and return types using simple
-// echo and grep commands. The functions can be called from the dagger CLI or
-// from one of the SDKs.
-//
-// The first line in this comment block is a short description line and the
-// rest is a long description with more detail on the module's purpose or usage,
-// if appropriate. All modules should have a short description.
-
 package main
 
 import (
 	"context"
 	"dagger/dag-coco/internal/dagger"
 	"fmt"
-	"strings"
 )
 
 type DagCoco struct{}
 
-type LogFilterOptions struct {
-}
-
-type VersionBumpOptions struct {
-	Auto      bool
-	CogToml   *dagger.File
-	DryRun    bool
-	Major     bool
-	Minor     bool
-	Patch     bool
-	PreMeta   *string
-	BuildMeta *string
-	Version   *string
-}
-
-type GetVersionOptions struct {
-	Fallback *string
-	Package  *string
-	Silence  bool
-}
-
-type ChangelogOptions struct {
-	At         *string
-	Template   *string
-	Remote     *string
-	Owner      *string
-	Repository *string // cog changelog --at 0.1.0 -t remote --remote github.com --owner oknozor --repository  cocogitto
-}
-
-type LogOptions struct { // cog log --author "Paul Delafosse" "Mike Lubinets" --type feat --scope cli --no-error
-	Authors      []string // -a and --author
-	CommitType   *string  //  -t and --type
-	Scope        *string  // -s and Scope
-	NoError      bool     // -e and --no-error
-	BreakingOnly bool     // -t breaking or -B
-}
-
-type CommitOptions struct {
-	CogToml        *dagger.File // optional cog toml to overwrite file
-	CommitType     string       // commit type: feat, fix or conv. commit
-	CommitMessage  string       // message
-	BreakingChange bool         // is a breaking change ?
-}
-
-// Initializing Git
-func (m *DagCoco) GitBase(ctx context.Context) *dagger.Container {
-	return dag.Container().
-		From("alpine:latest").
-		WithExec([]string{"apk", "update"}).
-		WithExec([]string{"apk", "upgrade"}).
-		WithExec([]string{"apk", "add", "git"}).
-		WithExec([]string{"git", "config", "--global", "user.name", "dagger"}).
-		WithExec([]string{"git", "config", "--global", "user.email", "cicd@stackit.cloud"})
-}
-
-// Returns a container with teh cloned repository in /repository
-func (m *DagCoco) CloneRepository(
-	ctx context.Context,
-	user string,
-	repositoryUrl string,
-	gitToken *dagger.Secret,
-) *dagger.Container {
-	token, err := gitToken.Plaintext(ctx)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	url := fmt.Sprintf("https://%s:%s@%s", user, token, strings.TrimPrefix(repositoryUrl, "https://"))
-	return m.GitBase(ctx).
-		WithWorkdir("/repository").
-		WithExec([]string{"git", "clone", url, "."})
-}
-
+// Base Function returning a rust latest container with cocogitto installed
 func (m *DagCoco) Base(ctx context.Context, repositoryUrl string, user string, gitToken *dagger.Secret) *dagger.Container {
 	repository := m.CloneRepository(ctx, user, repositoryUrl, gitToken).Directory("/repository")
 
@@ -173,11 +86,11 @@ func (m *DagCoco) Check(ctx context.Context, repositoryUrl string, user string, 
 
 // Install a single or all hooks
 // https://docs.cocogitto.io/guide/git_hooks.html
-func (m *DagCoco) InstallHooks(ctx context.Context, repositoryUrl string, user string, gitToken *dagger.Secret, commitMsg *string) (string, error) {
+func (m *DagCoco) InstallHooks(ctx context.Context, repositoryUrl string, user string, gitToken *dagger.Secret, commits *string) (string, error) {
 
 	args := ""
-	if commitMsg != nil {
-		args = *commitMsg
+	if commits != nil {
+		args = *commits
 	} else {
 		args = "--all"
 	}
@@ -314,6 +227,11 @@ func (m *DagCoco) Bump(ctx context.Context, repositoryUrl string, user string, g
 		if *options.BuildMeta != "" {
 			args = fmt.Sprintf("%s --build \"%s\"", args, *options.BuildMeta)
 		}
+
+		if options.SkipCi {
+			args = fmt.Sprintf("%s --skip-ci", args)
+		}
+
 	}
 
 	return base.
