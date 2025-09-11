@@ -194,7 +194,7 @@ func (m *DagCoco) Bump(ctx context.Context, repositoryUrl string, user string, g
 
 		if options.Version == nil {
 			if options.Auto {
-				args = fmt.Sprintf("--auto")
+				args = "--auto"
 			}
 
 			if options.Major {
