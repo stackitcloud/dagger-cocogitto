@@ -49,11 +49,11 @@ func (m *DagCoco) Commit(ctx context.Context, repositoryUrl string, user string,
 	args := ""
 
 	if options == nil {
-		return "", fmt.Errorf("Invalid commit options")
+		return "", fmt.Errorf("invalid commit options")
 	}
 
 	if options.CommitType == "" {
-		return "", fmt.Errorf("Invalid commit type")
+		return "", fmt.Errorf("invalid commit type")
 	}
 
 	args = options.CommitType
@@ -63,7 +63,7 @@ func (m *DagCoco) Commit(ctx context.Context, repositoryUrl string, user string,
 	}
 
 	if options.CommitMessage == "" {
-		return "", fmt.Errorf("Commit message can not be empty")
+		return "", fmt.Errorf("commit message can not be empty")
 	}
 
 	args = fmt.Sprintf("%s \"%s\"", args, options.CommitMessage)
@@ -72,7 +72,7 @@ func (m *DagCoco) Commit(ctx context.Context, repositoryUrl string, user string,
 		base.WithFile("cog.toml", options.CogToml)
 	}
 
-	return base.Stdout(ctx)
+	return base.WithExec([]string{"sh", "-c", fmt.Sprintf("cog commit %s", args)}).Stdout(ctx)
 }
 
 // Check commit history against conventional commits spec
@@ -116,7 +116,7 @@ func (m *DagCoco) Log(ctx context.Context, repositoryUrl string, user string, gi
 	if options != nil {
 		if options.Authors != nil {
 			if len(options.Authors) != 0 {
-				args = fmt.Sprintf("--author")
+				args = "--author"
 				for _, author := range options.Authors {
 					args = fmt.Sprintf("%s \"%s\"", args, author)
 				}
