@@ -4,6 +4,7 @@ import (
 	"context"
 	"dagger/dag-coco/internal/dagger"
 	"fmt"
+	"strings"
 )
 
 type DagCoco struct{}
@@ -113,9 +114,16 @@ func (m *DagCoco) Bump(
 		args = fmt.Sprintf("%s --skip-ci", args)
 	}
 
-	return base.
+	result, err := base.
 		WithExec([]string{"sh", "-c", fmt.Sprintf("cog bump %s", args)}).
 		Stdout(ctx)
+
+	if err != nil {
+		return "", fmt.Errorf("error bumping version")
+	}
+
+	return strings.TrimSuffix(result, "\n"), err
+
 }
 
 // Generate a changelog automatically
@@ -285,7 +293,7 @@ func (m *DagCoco) GetVersion(
 		args = fmt.Sprintf("%s --fallback %s", args, fallback)
 	}
 	if silence {
-		args = fmt.Sprintf("%s -v", args)
+		args = fmt.Sprintf("-v %s", args)
 	}
 
 	return m.Base(ctx, repositoryUrl, user, gitToken).
