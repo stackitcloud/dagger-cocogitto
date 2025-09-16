@@ -2,6 +2,17 @@
 
 Reusable dagger module for handling SemVer within a dagger pipeline
 
+
+
+---
+
+## Pre-Requisites
+
+- [Dagger](https://dagger.io)
+- [Just](https://github.com/casey/just)
+
+
+
 ---
 
 ## Get Started
@@ -9,8 +20,10 @@ Reusable dagger module for handling SemVer within a dagger pipeline
 Make this module part of your dagger module by using
 
 ````bash
-dagger install  https://github.com/stackitcloud/dagger-cocogitto.git
+dagger install https://github.com/stackitcloud/dagger-cocogitto.git
 ````
+
+
 
 ---
 
@@ -33,6 +46,8 @@ The full list of functions including their description can be retrieved by ``dag
 There a some optional parameters which can be set depending on the your requirements.
 To figure out which params are available for configuration, use ``dagger call [FN_NAME] -h``
 
+
+
 ---
 
 ## Justfile / Environment
@@ -40,6 +55,12 @@ To figure out which params are available for configuration, use ``dagger call [F
 The dagger module can be invoked by either calling a function via ``dagger call  [FN_NAME]`` or by calling the just recipe, e.g. ``just get-version``
 Just is reading the ``.env`` variable definitions in and passes them to the dagger function. Therefore to be able to use this dagger module with just, the variables defined in ``.env.template`` must be defined with the corresponding values in ``.env``.
 
+You can create a git token in your account settings - Applications/Access Tokens.
+The repository url must be written in lower case only e.g. "../Functions/..." will be rejected.
+
+
+
+---
 
 ## Cog.toml
 
